@@ -35,3 +35,6 @@ cmake-build-*/
 # Project files
 .idea/
 
+# Generated documentation
+docs/generated/
+
