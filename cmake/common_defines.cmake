@@ -1,4 +1,3 @@
-find_package(CxxTest)
 
 ################################################################################
 # Common flags that are conditionally set depending on the build type. Placed
