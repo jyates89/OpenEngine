@@ -1,27 +1,27 @@
-include(${CMAKE_SOURCE_DIR}/common_defines.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/common_defines.cmake)
 
-if(TARGET ${CURRENT_TARGET_NAME})
-    target_include_directories(${CURRENT_TARGET_NAME}
+if(TARGET ${PROJECT_NAME})
+    target_include_directories(${PROJECT_NAME}
             PRIVATE ${CMAKE_SOURCE_DIR}/src/include
             )
 
-    target_link_libraries(${CURRENT_TARGET_NAME}
+    target_link_libraries(${PROJECT_NAME}
             PUBLIC debug unwind
             )
 
-    target_link_libraries(${CURRENT_TARGET_NAME}
+    target_link_libraries(${PROJECT_NAME}
             PUBLIC debug dl
             )
 
-    target_compile_definitions(${CURRENT_TARGET_NAME}
+    target_compile_definitions(${PROJECT_NAME}
             PRIVATE $<$<CONFIG:RELEASE>:NDEBUG>
             )
 
-    target_compile_options(${CURRENT_TARGET_NAME}
+    target_compile_options(${PROJECT_NAME}
             ${COMMON_COMPILE_FLAGS}
             )
 
-    target_compile_features(${CURRENT_TARGET_NAME}
+    target_compile_features(${PROJECT_NAME}
             PRIVATE ${COMMON_COMPILE_FEATURES}
             )
 

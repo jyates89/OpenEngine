@@ -1,5 +1,17 @@
+cmake-3.1
 doxygen-1.8.14
 graphviz-2.40.1
 googletest-1.8.1
 googlemock-1.8.1
+vulkan-headers-1.1
+vulkan-extra-layers-1.1
+vulkan-tools-1.1
+vulkan-trace-1.1
+vulkan-validation-layers-1.1
+spirv-tools-2018.4-1
+glu-9.0.0-5
+glm-0.9.9.0-1
+glew-2.1.0-1
+freeglut-3.0.0-2
+glfw-x11-3.2.1-1
 
