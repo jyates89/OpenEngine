@@ -1,3 +1,21 @@
+
+# https://cliutils.gitlab.io/modern-cmake/chapters/projects/submodule.html
+function(init_submodules)
+    find_package(Git)
+    if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+        set(GIT_ARGUMENTS "submodule" "init")
+        execute_process(COMMAND ${GIT_EXECUTABLE} ${GIT_ARGUMENTS}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            RESULT_VARIABLE GIT_SUBMODULE_RESULT)
+
+        if(NOT GIT_SUBMODULE_RESULT EQUAL "0")
+            message(FATAL_ERROR
+                "${GIT_EXECUTABLE} ${GIT_ARGUMENTS} failed with ${GIT_SUBMODULE_RESULT}")
+        endif()
+    endif()
+endfunction()
+
+
 ################################################################################
 ## check_deps():    Given a list of dependencies, verify that they are all
 ##                  available on the current system.
