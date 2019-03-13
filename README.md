@@ -9,4 +9,5 @@
 * vendor: contains third party dependencies as git submodules.
 
 ## Notes
+* This is a note.
 
