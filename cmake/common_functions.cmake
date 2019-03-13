@@ -3,7 +3,7 @@
 function(init_submodules)
     find_package(Git)
     if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-        set(GIT_ARGUMENTS "submodule" "init")
+        set(GIT_ARGUMENTS "submodule" "update" "--init" "--checkout")
         execute_process(COMMAND ${GIT_EXECUTABLE} ${GIT_ARGUMENTS}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             RESULT_VARIABLE GIT_SUBMODULE_RESULT)
