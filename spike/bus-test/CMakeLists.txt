@@ -3,7 +3,11 @@ project(bus-test)
 
 add_executable(${PROJECT_NAME}
     BusTest.cpp
-    ${CMAKE_SOURCE_DIR}/src/lib/bus/Bus.cpp)
+    ${CMAKE_SOURCE_DIR}/src/lib/message-bus/MessageBus.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/message-bus/AsyncMessageBus.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/message-bus/SyncMessageBus.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/message-bus/EventMessageHandler.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/unique-identifiers/UniqueID.cpp)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE ${CMAKE_SOURCE_DIR}/src/include)

@@ -1,0 +1,8 @@
+//
+// Created by jyates on 2/15/19.
+//
+
+#ifndef OPENENGINE_SYNCMESSAGEBUS_H
+#define OPENENGINE_SYNCMESSAGEBUS_H
+
+#endif //OPENENGINE_SYNCMESSAGEBUS_H
