@@ -8,3 +8,5 @@
 * test: contains unit tests.
 * vendor: contains third party dependencies as git submodules.
 
+## Notes
+
