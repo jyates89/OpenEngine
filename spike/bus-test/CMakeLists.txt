@@ -6,8 +6,9 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_SOURCE_DIR}/src/lib/message-bus/MessageBus.cpp
     ${CMAKE_SOURCE_DIR}/src/lib/message-bus/AsyncMessageBus.cpp
     ${CMAKE_SOURCE_DIR}/src/lib/message-bus/SyncMessageBus.cpp
-    ${CMAKE_SOURCE_DIR}/src/lib/message-bus/EventMessageHandler.cpp
     ${CMAKE_SOURCE_DIR}/src/lib/unique-identifiers/UniqueID.cpp)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE uuid)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
@@ -19,4 +20,3 @@ if(CMAKE_VERBOSE)
     print_configuration_output(${PROJECT_NAME})
     write_generator_output(${PROJECT_NAME})
 endif()
-
