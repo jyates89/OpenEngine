@@ -1,9 +1,9 @@
 [submodule "vendor/google/googletest"]
-	path = vendor/google/googletest
+	path = cpp/vendor/google/googletest
 	url = https://github.com/google/googletest.git
 [submodule "vendor/doxygen"]
-	path = vendor/doxygen
+	path = cpp/vendor/doxygen
 	url = https://github.com/doxygen/doxygen.git
 [submodule "vendor/graphviz"]
-	path = vendor/graphviz
+	path = cpp/vendor/graphviz
 	url = https://gitlab.com/graphviz/graphviz.git
