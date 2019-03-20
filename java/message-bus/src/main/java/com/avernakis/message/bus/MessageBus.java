@@ -1,4 +1,7 @@
 package com.avernakis.message.bus;
 
-public class MessageBus {
+import java.util.Queue;
+
+class MessageBus {
+  protected Queue<? extends Message> messageQueue;
 }

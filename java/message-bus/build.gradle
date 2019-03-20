@@ -16,6 +16,7 @@ dependencies {
     compile project(':common')
 
     testCompile 'org.mockito:mockito-core:2.+'
+    testCompile ''
     testImplementation 'org.junit.jupiter:junit-jupiter:5.4.0'
 }
 
