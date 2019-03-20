@@ -5,10 +5,8 @@
 #ifndef OPENENGINE_MESSAGETYPE_H
 #define OPENENGINE_MESSAGETYPE_H
 
-
 #include <cstdint>
 #include <string>
-
 
 #include "unique-identifiers/UniqueID.h"
 /*
@@ -38,4 +36,5 @@ public:
         return m_messageLabel;
     }
 };
+
 #endif //OPENENGINE_MESSAGETYPE_H

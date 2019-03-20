@@ -8,7 +8,11 @@
 #include "MessageBus.h"
 
 class AsyncMessageBus : public MessageBus {
+    std::queue<std::shared_ptr<MessageType>> messageQueue;
 
+public:
+    AsyncMessageBus() = default;
+    virtual ~AsyncMessageBus() = default;
 };
 
 #endif //OPENENGINE_ASYNCMESSAGEBUS_H

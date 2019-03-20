@@ -1,8 +1,9 @@
+include(${CMAKE_SOURCE_DIR}/cmake/common_defines.cmake)
 
 # https://cliutils.gitlab.io/modern-cmake/chapters/projects/submodule.html
 function(init_submodules)
     find_package(Git)
-    if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    if(GIT_FOUND)
         set(GIT_ARGUMENTS "submodule" "update" "--init" "--checkout")
         execute_process(COMMAND ${GIT_EXECUTABLE} ${GIT_ARGUMENTS}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -17,45 +18,29 @@ endfunction()
 
 
 ################################################################################
-## check_deps():    Given a list of dependencies, verify that they are all
-##                  available on the current system.
+## set_target_options(): Set usual options for the given target.
 ##
-##      DEP_LIST:   This is the list of arguments; note that it MUST be passed
-##                  in quotes if it is a list containing more than one item.
+##  CURRENT_TARGET_NAME: name of the target to set options on.
+##
 ################################################################################
-function(check_dependencies)
+function(set_target_options CURRENT_TARGET_NAME)
+    target_include_directories(${CURRENT_TARGET_NAME}
+        PRIVATE ${CMAKE_SOURCE_DIR}/src/include)
 
-    # Options are flags that can be passed to the function.
-    set(OPTIONS NONE)
-    # One-value-keywords are options that are followed with a single value.
-    set(ONE_VALUE_KEYWORDS
-        DEPENDENCY_NAME)
-    # Multi-value-keywords are options that can be followed with one or more values.
-    set(MULTI_VALUE_KEYWORDS NONE)
+    target_link_libraries(${CURRENT_TARGET_NAME}
+        PUBLIC  $<$<CONFIG:DEBUG>:unwind>
+                $<$<CONFIG:DEBUG>:dl>)
 
-    cmake_parse_arguments(OPTS
-            "${OPTIONS}" "${ONE_VALUE_KEYWORDS}"
-            "${MULTI_VALUE_KEYWORDS}" ${ARGN})
+    target_compile_definitions(${CURRENT_TARGET_NAME}
+        PRIVATE $<$<CONFIG:RELEASE>:NDEBUG>)
 
-    foreach(LIBRARY ${DEP_LIST})
-        message(STATUS "\tSearching for required library "
-                "'${LIBRARY}'...")
-        find_package(${LIBRARY})
-        find_library(${LIBRARY}_RESULT ${LIBRARY})
-        # find_library stores the result in a new cached variable
-        # called <VAR>_RESULT, so we can just check that to see if
-        # the variable was found.
-        if (NOT ${LIBRARY}_RESULT)
-            message(STATUS "${LIBRARY} is not available on this system, please"
-                    " install it and attempt to run cmake again.")
-            message(FATAL_ERROR "Failed to find required "
-                    "library '${LIBRARY}'.")
-        else()
-            message(STATUS "\t\tFound the library '${LIBRARY}' at "
-                    "location '${${LIBRARY}_RESULT}'.")
-        endif()
-    endforeach()
+    target_compile_options(${CURRENT_TARGET_NAME}
+        ${COMMON_COMPILE_FLAGS})
+
+    target_compile_features(${CURRENT_TARGET_NAME}
+        PRIVATE ${COMMON_COMPILE_FEATURES})
 endfunction()
+
 
 ################################################################################
 ## print_configuration_output(): Given a target, print all useful properties.

@@ -2,10 +2,22 @@
 // Created by jyates on 2/13/19.
 //
 
-#include <message-bus/MessageBus.h>
+#include <vector>
 
 #include "message-bus/MessageBus.h"
 #include "message-bus/MessageType.h"
+
+
+void MessageBus::registerMessageType(UniqueID messageID) {
+    handlerMap.insert(std::make_pair(messageID,
+            std::vector<HandlerStore>()));
+}
+
+void MessageBus::removeMessageType(UniqueID messageID) {
+    if (handlerMap.find(messageID) != handlerMap.end()) {
+        handlerMap.erase(messageID);
+    }
+}
 
 uint32_t MessageBus::registerHandler(UniqueID messageID,
         std::function<void(std::unique_ptr<MessageType>)> handler) {
@@ -30,9 +42,12 @@ void MessageBus::removeHandler(UniqueID messageID, std::uint32_t handlerIdentifi
     if (messageTypeIt != handlerMap.end()) {
         std::vector<HandlerStore>& handlers = messageTypeIt->second;
         if (handlerIdentifier > handlers.size()) {
-            for (auto handlerIt: handlers) {
+            for (auto& handlerIt: handlers) {
                 if (handlerIt.identifier == handlerIdentifier) {
-
+                    std::ptrdiff_t index = std::addressof(handlerIt)
+                            - std::addressof(*handlers.begin());
+                    handlers.erase(handlers.begin() + index);
+                    return;
                 }
             }
         }

@@ -147,7 +147,7 @@ if(GENERATE_DOCS)
         add_custom_target(Graphviz DOT_EXECUTABLE)
     endif()
 
-    configure_file(${CMAKE_SOURCE_DIR}/config/Doxyfile.in ${CMAKE_BINARY_DIR}/config/Doxyfile)
+    configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/config/Doxyfile)
     add_custom_target(docs ALL
         ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/config/Doxyfile
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs
@@ -155,12 +155,18 @@ if(GENERATE_DOCS)
         DEPENDS Doxygen Graphviz GraphvizConfig)
 endif()
 
-
 # Provides targets: gmock and gtest
 add_subdirectory(vendor/google/googletest)
 
-enable_testing()
 
+# Spike Code
 add_subdirectory(spike/google-mock-test)
 add_subdirectory(spike/doxygen-test)
 add_subdirectory(spike/bus-test)
+
+# Testing
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/test)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
