@@ -1,0 +1,8 @@
+//
+// Created by jyates on 3/16/19.
+//
+
+#ifndef OPENENGINE_CONVERSIONS_H
+#define OPENENGINE_CONVERSIONS_H
+
+#endif //OPENENGINE_CONVERSIONS_H

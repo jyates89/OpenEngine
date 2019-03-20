@@ -32,6 +32,9 @@ protected:
 public:
     virtual ~MessageBus() = default;
 
+    void registerMessageType(UniqueID messageID);
+    void removeMessageType(UniqueID messageID);
+
     // return the handle ID to save for removing from registrant list
     uint32_t registerHandler(UniqueID messageID,
             std::function<void(std::unique_ptr<MessageType>)> handler);
