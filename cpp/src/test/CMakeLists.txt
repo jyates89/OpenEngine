@@ -10,3 +10,23 @@ target_link_libraries(MessageBusTesting PRIVATE general gmock)
 add_test(NAME MessageBusTesting
     COMMAND MessageBusTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+
+add_executable(CommandTesting
+    patterns/CommandTest.cpp)
+set_target_options(CommandTesting)
+target_link_libraries(CommandTesting PRIVATE general gmock)
+add_test(NAME CommandTesting
+    COMMAND CommandTesting
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(ObserverTesting
+    patterns/ObserverTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/patterns/Observer.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/patterns/Observable.cpp)
+set_target_options(ObserverTesting)
+target_link_libraries(ObserverTesting PRIVATE general gmock)
+add_test(NAME ObserverTesting
+    COMMAND ObserverTesting
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+

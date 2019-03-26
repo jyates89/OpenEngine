@@ -162,7 +162,6 @@ add_subdirectory(vendor/google/googletest)
 # Spike Code
 add_subdirectory(spike/google-mock-test)
 add_subdirectory(spike/doxygen-test)
-add_subdirectory(spike/bus-test)
 
 # Testing
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/test)

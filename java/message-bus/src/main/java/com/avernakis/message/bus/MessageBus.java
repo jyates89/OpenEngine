@@ -2,6 +2,9 @@ package com.avernakis.message.bus;
 
 import java.util.Queue;
 
-class MessageBus {
-  protected Queue<? extends Message> messageQueue;
+abstract class MessageBus {
+  Queue<?> messageQueue;
+
+  abstract <T extends Message> void push(T message);
+
 }

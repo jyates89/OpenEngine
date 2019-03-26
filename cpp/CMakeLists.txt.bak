@@ -1,0 +1,340 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
+PROJECT(AsgardLibraries)
+
+# * Grab the current version from the last line in the 
+#   version history.
+FILE(STRINGS "version_history.txt" VERSION_HISTORY)
+FOREACH(VERSION_LINE ${VERSION_HISTORY})
+    SET(CURRENT_VERSION ${VERSION_LINE})
+ENDFOREACH()
+MESSAGE(STATUS "Current version: ${CURRENT_VERSION}")
+STRING(REGEX MATCHALL "[0-9]+|[A-Z]+" 
+    VERSION_SEGMENTS ${CURRENT_VERSION})
+LIST(GET VERSION_SEGMENTS 0 VERSION_MAJOR)
+LIST(GET VERSION_SEGMENTS 1 VERSION_MINOR)
+LIST(GET VERSION_SEGMENTS 2 VERSION_PATCH)
+LIST(LENGTH VERSION_SEGMENTS VERSION_SEGMENT_LEN)
+IF(VERSION_SEGMENT_LEN GREATER 3)
+    LIST(GET VERSION_SEGMENTS 3 REL_DESIGNATION)
+ENDIF()
+
+# * Handle cases where we want to increase the version number
+#   or change the release designation.
+#   Usage (shown separately, but may be used together):
+#       cmake -DREV_MAJOR=TRUE ..
+#       cmake -DREV_MINOR=TRUE ..
+#       cmake -DREV_PATCH=TRUE ..
+#       cmake -DCHANGE_REL_DESIGNATION=ALPHA ..
+IF(REV_MAJOR OR REV_MINOR OR REV_PATCH OR REL_DESIG)
+    IF(REV_MAJOR)
+        MATH(EXPR NEW_VERSION_MAJOR "${VERSION_MAJOR}+1")
+        SET(VERSION_MAJOR ${NEW_VERSION_MAJOR})
+    ENDIF()
+    IF(REV_MINOR)
+        MATH(EXPR NEW_VERSION_MINOR "${VERSION_MINOR}+1")
+        SET(VERSION_MINOR ${NEW_VERSION_MINOR})
+    ENDIF()
+    IF(REV_PATCH)
+        MATH(EXPR NEW_VERSION_PATCH "${VERSION_PATCH}+1")
+        SET(VERSION_PATH ${NEW_VERSION_PATCH})
+    ENDIF()
+    IF(REL_DESIG)
+        IF(REL_DESIG STREQUAL "DISABLE")
+            SET(REL_DESIGNATION "")
+        ELSE()
+            SET(REL_DESIGNATION ${REL_DESIG})
+        ENDIF()
+    ENDIF()
+    FILE(APPEND "version_history.txt" 
+        "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${REL_DESIGNATION}\n")
+    UNSET(REV_MAJOR CACHE)
+    UNSET(REV_MINOR CACHE)
+    UNSET(REV_PATCH CACHE)
+    UNSET(REL_DESIG CACHE)
+ENDIF()
+
+# make sure the build type is always filled in
+IF(CMAKE_BUILD_TYPE STREQUAL "")
+    SET(CMAKE_BUILD_TYPE "DEBUG")
+ENDIF()
+
+SET(PROJECT_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+
+CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/version.h"    
+               "${CMAKE_BINARY_DIR}/version.h")
+
+STRING(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+SET(PROJECT_PACKAGE_NAME "${PROJECT_NAME_LOWER}-${PROJECT_VERSION}.${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE}")
+
+IF(CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
+    MESSAGE(FATAL_ERROR 
+        "Do not do an in-source build! "
+        "Change to the 'build' directory. "
+        "Then, execute 'cmake ..'.")
+ENDIF()
+
+# output directories for standard generated files
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# install directory
+SET(CMAKE_INSTALL_PREFIX "/opt")
+
+# output directory for extra generated files (cxxtest generated source
+# and installers generated via cpack)
+FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/generated)
+FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/installers)
+
+# set the various flags for each release type
+SET(DEBUG_FLAGS   "${FLAGS} --std=c++0x -Wall -ggdb3 -fvar-tracking -fno-eliminate-unused-debug-types -fno-inline-small-functions")
+SET(RELEASE_FLAGS "${FLAGS} --std=c++0x -Wall -s -O2")
+
+# find and include cxxtest files
+FIND_PACKAGE(CxxTest REQUIRED)
+IF(CXXTEST_FOUND)
+    INCLUDE_DIRECTORIES(${CXXTEST_INCLUDE_DIR})
+    ENABLE_TESTING()
+ENDIF()
+
+IF(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    ADD_DEFINITIONS(-D_GLIBCXX_DEBUG)
+ENDIF()
+IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
+    ADD_DEFINITIONS(-DPARTIAL_CXX11_SUPPORT)
+ENDIF()
+
+# unit testing headers are located here
+SET(TESTING_DIR ${CMAKE_SOURCE_DIR}/Testing)
+
+LINK_DIRECTORIES(/usr/lib64/mysql)
+
+##################################################################
+#                 function to set compile flags                  #
+##################################################################
+FUNCTION(SET_TARGET_COMPILE_FLAGS TARGET_NAME)
+    SET(EXTRA_ARGS ${ARGN})
+
+    # Check for dependencies list as extra arguments
+    LIST(LENGTH EXTRA_ARGS EXTRA_ARGS_COUNT)
+    IF(${EXTRA_ARGS_COUNT} GREATER 0)
+        LIST(GET DEPENDENCIES 0 OPTION)
+        MESSAGE(STATUS "Target name ${TARGET_NAME} depends on ${DEPENDENCIES}.")
+    ENDIF()
+
+    MESSAGE("")
+
+    # obtain any existing compile flags
+    GET_TARGET_PROPERTY(FLAGS ${TARGET_NAME} COMPILE_FLAGS)
+    IF(FLAGS STREQUAL "FLAGS-NOTFOUND")
+        SET(FLAGS "")
+    ELSE()
+        SET(FLAGS "${FLAGS} ")
+    ENDIF()
+    
+    # set our new compile flags (after checking the build type)
+    IF(CMAKE_BUILD_TYPE STREQUAL "RELEASE")
+        MESSAGE(STATUS "Release target ${TARGET_NAME} assigned the flags '${RELEASE_FLAGS}'.")
+        SET_TARGET_PROPERTIES(${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${RELEASE_FLAGS})
+    ELSE()
+        MESSAGE(STATUS "Debug target ${TARGET_NAME} assigned the flags '${DEBUG_FLAGS}'.")
+        SET_TARGET_PROPERTIES(${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${DEBUG_FLAGS})
+    ENDIF()
+    
+    # link any dependencies
+    TARGET_LINK_LIBRARIES(${TARGET_NAME} ${DEPENDENCIES})
+ENDFUNCTION()
+
+##################################################################
+#             function to generate testing files                 #
+##################################################################
+FUNCTION(ADD_TEST_HEADER TESTING_HEADER DEPENDENCIES)
+    MESSAGE(STATUS "Test ${TESTING_HEADER} depends on ${DEPENDENCIES}.")
+
+    # the source file is generated from the header, so replace the extension 
+    # and save it to a new variable
+    STRING(REPLACE ".h" ".cpp" TESTING_SOURCE ${TESTING_HEADER})
+    
+    # get the binary file name by removing the path and extension from the header file name
+    GET_FILENAME_COMPONENT(TESTING_BINARY ${TESTING_HEADER} NAME_WE)
+    
+    # get the generated source file name by removing the path form the file name
+    GET_FILENAME_COMPONENT(TESTING_SOURCE ${TESTING_SOURCE} NAME)
+    
+    # add the test (internally uses add_executable and add_test)
+    CXXTEST_ADD_TEST(${TESTING_BINARY} generated/${TESTING_SOURCE} ${TESTING_HEADER})
+    
+    # set the compile flags
+    SET_TARGET_COMPILE_FLAGS(${TESTING_BINARY} ${DEPENDENCIES})
+ENDFUNCTION()
+
+##################################################################
+#             function to add requirements in cpack              #
+##################################################################
+FUNCTION(ADD_DEPS_TO_REQS NEW_DEP)
+    MESSAGE(STATUS "Dependency ${NEW_DEP} added to install requirements.")
+    IF(NOT CPACK_PACKAGE_REQUIRES)
+        SET(CPACK_PACKAGE_REQUIRES "${NEW_DEP}" PARENT_SCOPE)
+    ELSE()
+        SET(CPACK_PACKAGE_REQUIRES "${CPACK_PACKAGE_REQUIRES}, ${NEW_DEP}" PARENT_SCOPE)
+    ENDIF()
+ENDFUNCTION()
+
+##################################################################
+#         function to add files to install in cpack              #
+##################################################################
+FUNCTION(ADD_FILE_TO_LIST NEW_FILE)
+    MESSAGE(STATUS "File ${NEW_FILE} added to install file list.")
+    IF(NOT CPACK_INSTALL_FILES)
+        SET(CPACK_INSTALL_FILES "${NEW_FILE}" PARENT_SCOPE)
+    ELSE()
+        SET(CPACK_INSTALL_FILES "${CPACK_INSTALL_FILES}\n${NEW_FILE}" PARENT_SCOPE)
+    ENDIF()
+ENDFUNCTION()
+
+##################################################################
+#                 function to set install location               #
+##################################################################
+FUNCTION(SET_TARGET_INSTALL_LOCATION TARGET_NAME)
+    # get the location and file name
+    GET_PROPERTY(FILE_LOCATION TARGET ${TARGET_NAME} PROPERTY LOCATION) 
+    GET_FILENAME_COMPONENT(FILE_NAME ${FILE_LOCATION} NAME)
+    
+    IF(${FILE_NAME} MATCHES ".a$" OR ${FILE_NAME} MATCHES ".so$")
+        SET(INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/lib/${FILE_NAME})
+        MESSAGE(STATUS "Library ${TARGET_NAME} will be installed to ${INSTALL_PATH}.")
+        INSTALL(TARGETS ${TARGET_NAME} DESTINATION ${PROJECT_NAME}/lib)
+    ELSE()
+        SET(INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/bin/${FILE_NAME})
+        MESSAGE(STATUS "Executable ${TARGET_NAME} will be installed to ${INSTALL_PATH}.")
+        INSTALL(TARGETS ${TARGET_NAME} DESTINATION ${PROJECT_NAME}/bin) 
+    ENDIF()
+    
+    # add the location to the list of files to be installed
+    ADD_FILE_TO_LIST(${INSTALL_PATH})
+ENDFUNCTION()
+
+##################################################################
+#                      pattern source files                      #
+##################################################################
+SET(PATTERN_LIB "Patterns")
+SET(PATTERN_DIR                                 ${CMAKE_SOURCE_DIR}/Patterns)
+SET(PATTERN_SOURCES                             ${PATTERN_DIR}/Observer.cpp
+                                                ${PATTERN_DIR}/Observable.cpp)
+ADD_LIBRARY(${PATTERN_LIB}                      ${PATTERN_SOURCES})
+SET_TARGET_PROPERTIES(${PATTERN_LIB} PROPERTIES VERSION ${PROJECT_VERSION})
+SET_TARGET_INSTALL_LOCATION(${PATTERN_LIB})
+SET_TARGET_COMPILE_FLAGS(${PATTERN_LIB})
+
+SET(PATTERN_TEST_DIR                            ${TESTING_DIR}/Patterns)
+SET(PATTERN_UNIT_TEST                           ${PATTERN_TEST_DIR}/Test_Command.h
+                                                ${PATTERN_TEST_DIR}/Test_Decorator.h
+                                                ${PATTERN_TEST_DIR}/Test_Flyweight.h
+                                                ${PATTERN_TEST_DIR}/Test_Observable.h
+                                                ${PATTERN_TEST_DIR}/Test_State.h
+                                                ${PATTERN_TEST_DIR}/Test_Strategy.h)
+SET(PATTERN_TESTING_DEPS                        ${PATTERN_LIB})
+
+FOREACH(TEST_HEADER ${PATTERN_UNIT_TEST})
+    ADD_TEST_HEADER(${TEST_HEADER} ${PATTERN_TESTING_DEPS})
+ENDFOREACH()
+
+##################################################################
+#                        type source files                       #
+##################################################################
+SET(TYPES_LIB "Types")
+SET(TYPES_DIR                                   ${CMAKE_SOURCE_DIR}/Types)
+SET(TYPES_SOURCES                               ${TYPES_DIR}/UniqueID.cpp)
+ADD_LIBRARY(${TYPES_LIB}                        ${TYPES_SOURCES})
+SET_TARGET_PROPERTIES(${TYPES_LIB} PROPERTIES VERSION ${PROJECT_VERSION})
+SET_TARGET_INSTALL_LOCATION(${TYPES_LIB})
+SET_TARGET_COMPILE_FLAGS(${TYPES_LIB})
+
+TARGET_LINK_LIBRARIES(${TYPES_LIB}              uuid)
+
+SET(TYPE_TEST_DIR                               ${TESTING_DIR}/Types)
+SET(TYPE_UNIT_TEST                              ${TYPE_TEST_DIR}/Test_UniqueID.h
+                                                ${TYPE_TEST_DIR}/Test_Enumerator.h
+                                                ${TYPE_TEST_DIR}/SQL/Test_Var.h)
+SET(TYPE_TESTING_DEPS                           ${TYPES_LIB}
+                                                uuid)
+ADD_DEPS_TO_REQS("uuid")
+
+FOREACH(TEST_HEADER ${TYPE_UNIT_TEST})
+    ADD_TEST_HEADER(${TEST_HEADER} ${TYPE_TESTING_DEPS})
+ENDFOREACH()
+
+##################################################################
+#                     wrapper source files                       #
+##################################################################
+SET(WRAPPER_LIB "Wrappers")
+SET(WRAPPER_DIR                                 ${CMAKE_SOURCE_DIR}/Wrappers)
+SET(WRAPPER_SOURCES                             ${WRAPPER_DIR}/WMariaDB.cpp
+                                                ${WRAPPER_DIR}/WMySQL.cpp
+                                                ${WRAPPER_DIR}/WSQLite.cpp
+                                                ${WRAPPER_DIR}/WDisk.cpp)
+ADD_LIBRARY(${WRAPPER_LIB}                      ${WRAPPER_SOURCES})
+SET_TARGET_PROPERTIES(${WRAPPER_LIB} PROPERTIES VERSION ${PROJECT_VERSION})
+SET_TARGET_INSTALL_LOCATION(${WRAPPER_LIB})
+SET_TARGET_COMPILE_FLAGS(${WRAPPER_LIB})
+
+TARGET_LINK_LIBRARIES(${WRAPPER_LIB}              sqlite3
+                                                  mysqlclient)
+
+SET(WRAPPER_TEST_DIR                            ${TESTING_DIR}/Wrappers)
+SET(WRAPPER_UNIT_TEST                           ${WRAPPER_TEST_DIR}/Test_WSQLite.h
+                                                ${WRAPPER_TEST_DIR}/Test_WDisk.h)
+SET(WRAPPER_TESTING_DEPS                        ${WRAPPER_LIB}
+                                                sqlite3
+                                                mysqlclient)
+ADD_DEPS_TO_REQS("sqlite3")
+ADD_DEPS_TO_REQS("mysqlclient")
+
+FOREACH(TEST_HEADER ${WRAPPER_UNIT_TEST})
+    ADD_TEST_HEADER(${TEST_HEADER} ${WRAPPER_TESTING_DEPS})
+ENDFOREACH()
+
+##################################################################
+#                    resolve other dependencies                  #
+##################################################################
+TARGET_LINK_LIBRARIES(${PATTERN_LIB} ${TYPES_LIB})
+
+##################################################################
+#                        included directories                    #
+##################################################################
+INCLUDE_DIRECTORIES(AFTER SYSTEM                ${CMAKE_SOURCE_DIR}
+                                                ${PATTERN_DIR}
+                                                ${TYPES_DIR}
+                                                ${WRAPPER_DIR})
+
+##################################################################
+#                  Set up the RPM generation with cpack          #
+##################################################################
+SET(CPACK_GENERATOR RPM)
+SET(CPACK_RPM_PACKAGE_DEBUG            TRUE)
+
+SET(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
+
+IF(DO_NOT_RELOCATE)
+    SET(CPACK_INSTALL_PREFIX               "/opt")
+    SET(CPACK_SET_DESTDIR                  TRUE)
+    SET(CPACK_PACKAGE_RELOCATABLE          FALSE)
+    SET(CPACK_INSTALL_DIR_PREFIX           ${CPACK_INSTALL_PREFIX})
+ELSE()
+    SET(CPACK_PACKAGING_INSTALL_PREFIX     ${CMAKE_INSTALL_PREFIX})
+    SET(CPACK_INSTALL_DIR_PREFIX           ${CPACK_PACKAGING_INSTALL_PREFIX})
+ENDIF()
+
+SET(CPACK_PACKAGE_SUMMARY              "Asgard Libraries Installation")
+SET(CPACK_PACKAGE_NAME                 ${PROJECT_NAME})
+SET(CPACK_PACKAGE_VERSION              ${PROJECT_VERSION})
+SET(CPACK_PACKAGE_RELEASE              1)
+SET(CPACK_PACKAGE_LICENSE              "Unknown License")
+SET(CPACK_PACKAGE_GROUP                "Development/Tools/Other")
+SET(CPACK_PACKAGE_CONTACT              "jyates@invidi.com")
+SET(CPACK_PACKAGE_VENDOR               "INVIDI Technologies")
+SET(CPACK_PACKAGE_FILE_NAME            ${PROJECT_PACKAGE_NAME})
+
+INCLUDE(CPack)

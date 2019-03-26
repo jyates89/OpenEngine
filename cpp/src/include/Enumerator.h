@@ -14,7 +14,7 @@
 
 template<typename Enum, Enum current, Enum... values>
 class Enumerator {
-    friend class Test_Enumerator;
+friend class Test_Enumerator;
 public:
     // The call sizeof is converted to a compile time constant, so we can check the
     //  size of our unpacked values, and add one (to account for 'current').
@@ -67,15 +67,15 @@ private:
 
 template<typename Enum, Enum current, Enum... values>
 const std::string Enumerator<Enum, current, values...>::INVALID_ENUM_FOR_CONVERSION
-                          = "unsupported enumeration passed in for conversion operation";
+    = "unsupported enumeration passed in for conversion operation";
 
 template<typename Enum, Enum current, Enum... values>
 const std::string Enumerator<Enum, current, values...>::INVALID_ENUM_FOR_ADVANCE
-                          = "unsupported enumeration passed in for advance operation";
+    = "unsupported enumeration passed in for advance operation";
 
 template<typename Enum, Enum current, Enum... values>
 const std::string Enumerator<Enum, current, values...>::INVALID_ENUM_FOR_REVERSE
-                          = "unsupported enumeration passed in for reverse operation";
+    = "unsupported enumeration passed in for reverse operation";
 
 template<typename Enum, Enum current, Enum ... values>
 inline void Enumerator<Enum, current, values...>::advance(Enum& value) {
