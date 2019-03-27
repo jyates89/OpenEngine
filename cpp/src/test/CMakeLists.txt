@@ -22,10 +22,11 @@ add_test(NAME CommandTesting
 
 add_executable(ObserverTesting
     patterns/ObserverTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/UniqueID.cpp
     ${CMAKE_SOURCE_DIR}/src/lib/patterns/Observer.cpp
     ${CMAKE_SOURCE_DIR}/src/lib/patterns/Observable.cpp)
 set_target_options(ObserverTesting)
-target_link_libraries(ObserverTesting PRIVATE general gmock)
+target_link_libraries(ObserverTesting PRIVATE general gmock uuid)
 add_test(NAME ObserverTesting
     COMMAND ObserverTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

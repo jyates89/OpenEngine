@@ -60,30 +60,21 @@ private:
     int val;
 };
 
-TEST(CommandTest, InitialTest) { // NOLINT
+TEST(CommandTest, DifferentCommands) { // NOLINT
     std::vector<std::shared_ptr<Command<SpecificData>>> commandList;
 
-    std::shared_ptr<SomeCommand> command(new SomeCommand);
+    std::shared_ptr<SomeCommand> command = std::make_shared<SomeCommand>();
     commandList.push_back(command);
 
-    std::shared_ptr<AnotherCommand> anotherCommand(new AnotherCommand);
+    std::shared_ptr<AnotherCommand> anotherCommand = std::make_shared<AnotherCommand>();
     commandList.push_back(anotherCommand);
 
     for (auto&& it: commandList) {
         it->execute();
     }
 
-    std::stringstream commandTestOne("Command(SomeCommand) details: ",
-                                     std::ios::app|std::ios::out);
-    commandTestOne << command->em_commandData.getSomeData();
-    RecordProperty("Command #1", commandTestOne.str());
-
-    std::stringstream commandTestTwo("Command(AnotherCommand) details: ",
-                                     std::ios::app|std::ios::out);
-    commandTestTwo << anotherCommand->em_commandData.getSomeData();
-    RecordProperty("Command #2", commandTestTwo.str());
-
-    EXPECT_EQ(command->em_commandData.getSomeData(), anotherCommand->em_commandData.getSomeData());
+    EXPECT_NE(command->em_commandData.getSomeData(),
+            anotherCommand->em_commandData.getSomeData());
 }
 
 int main(int argc, char** argv) {

@@ -13,18 +13,10 @@ class Command {
 public:
     CommandData em_commandData;
 
-    Command();
-    virtual ~Command();
+    Command() = default;
+    virtual ~Command() = default;
 
     virtual void execute() = 0;
 };
-
-template<class CommandData>
-inline Command<CommandData>::Command() {
-}
-
-template<class CommandData>
-inline Command<CommandData>::~Command() {
-}
 
 #endif /* PATTERNS_COMMAND_H_ */
