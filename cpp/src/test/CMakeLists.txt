@@ -3,14 +3,13 @@ project(open-engine-testing)
 
 include(${CMAKE_SOURCE_DIR}/cmake/common_functions.cmake)
 
-add_executable(MessageBusTesting message-bus/MessageBusTest.cpp)
+add_executable(MessageBusTesting
+    message-bus/MessageBusTest.cpp)
 set_target_options(MessageBusTesting)
 target_link_libraries(MessageBusTesting PRIVATE general gmock)
-
 add_test(NAME MessageBusTesting
     COMMAND MessageBusTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-
 
 add_executable(CommandTesting
     patterns/CommandTest.cpp)
@@ -31,3 +30,10 @@ add_test(NAME ObserverTesting
     COMMAND ObserverTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
+add_executable(DecoratorTesting
+    patterns/DecoratorTest.cpp)
+set_target_options(DecoratorTesting)
+target_link_libraries(DecoratorTesting PRIVATE general gmock)
+add_test(NAME DecoratorTesting
+    COMMAND DecoratorTesting
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

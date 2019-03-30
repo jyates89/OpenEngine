@@ -11,12 +11,12 @@
 #include <memory>
 #include <string>
 
-#include "../Types/StandardDefines.h"
+#include "StandardDefines.h"
 
 template<class Decoratee>
 class Decorator {
 public:
-    virtual ~Decorator();
+    virtual ~Decorator() = default;
 
     virtual void addDecoration(std::unique_ptr<Decorator<Decoratee>> decoration);
 
@@ -26,17 +26,13 @@ protected:
     std::string m_description;
     std::unique_ptr<Decorator<Decoratee>> m_nestedDecorator;
 
-    Decorator();
-    Decorator(std::unique_ptr<Decorator<Decoratee>> decorator);
+    explicit Decorator();
+    explicit Decorator(std::unique_ptr<Decorator<Decoratee>> decorator);
 
 private:
     virtual void processDecoration(Decoratee& decoratee) = 0;
 
 };
-
-template<class Decoratee>
-inline Decorator<Decoratee>::~Decorator() {
-}
 
 template<class Decoratee>
 inline void Decorator<Decoratee>::addDecoration(
@@ -68,12 +64,12 @@ inline Decorator<Decoratee>::Decorator() :
 
 template<class Decoratee>
 inline Decorator<Decoratee>::Decorator(
-        std::unique_ptr<Decorator<Decoratee>> decoration) :
+        std::unique_ptr<Decorator<Decoratee>> decorator) :
             m_nestedDecorator(nullptr) {
-    if (decoration == nullptr) {
+    if (decorator == nullptr) {
         throw std::invalid_argument("invalid arguments: nullptr");
     }
-    m_nestedDecorator = std::move(decoration);
+    m_nestedDecorator = std::move(decorator);
 }
 
 #endif /* PATTERNS_DECORATOR_H_ */
