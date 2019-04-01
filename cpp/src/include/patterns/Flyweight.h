@@ -10,43 +10,62 @@
 
 #include <memory>
 
-#include "../Types/UniqueID.h"
+#include "StandardDefines.h"
+#include "UniqueID.h"
 
 template<class Intrinsic, class Extrinsic>
 class Flyweight {
-public:
-    UniqueID em_identifier;
+    template<typename T, typename U>
+    friend class FlyweightFactory;
 
-    Flyweight();
-    virtual ~Flyweight();
+public:
+    UniqueID uniqueID();
+
+    const std::unique_ptr<Intrinsic>& intrinsic() const;
+
+    void updateState(Extrinsic extrinsic);
 
     Flyweight(const Flyweight& right) = delete;
 
-    Flyweight& operator =(const Flyweight& right);
-
-    virtual void calculateState(Extrinsic extrinsic) = 0;
-
-protected:
-    std::unique_ptr<Intrinsic> m_intrinsicState;
+    virtual ~Flyweight() = default;
 
 private:
-    Intrinsic validateIntrinsic() { return Intrinsic(); }
+    template<typename ...Args>
+    explicit Flyweight(const UniqueID& uniqueID, Args&& ...args);
+
+    Flyweight& operator =(const Flyweight& right);
+
+    std::unique_ptr<Intrinsic> m_intrinsicState;
+    UniqueID m_identifier;
 };
 
 template<class Intrinsic, class Extrinsic>
-inline Flyweight<Intrinsic, Extrinsic>::~Flyweight() {
+UniqueID Flyweight<Intrinsic, Extrinsic>::uniqueID() {
+    return m_identifier;
 }
 
 template<class Intrinsic, class Extrinsic>
-inline Flyweight<Intrinsic, Extrinsic>::Flyweight() :
-        m_intrinsicState(new Intrinsic) {
+const std::unique_ptr<Intrinsic>& Flyweight<Intrinsic, Extrinsic>::intrinsic() const {
+    return m_intrinsicState;
+}
+
+template<class Intrinsic, class Extrinsic>
+void Flyweight<Intrinsic, Extrinsic>::updateState(Extrinsic extrinsic) {
+    m_intrinsicState->updateState(extrinsic);
+}
+
+template<class Intrinsic, class Extrinsic>
+template<typename ...Args>
+Flyweight<Intrinsic, Extrinsic>::Flyweight(const UniqueID &uniqueID, Args&& ...args) {
+    m_identifier = uniqueID;
+    m_intrinsicState = std::make_unique<Intrinsic>(args...);
 }
 
 template<class Intrinsic, class Extrinsic>
 inline Flyweight<Intrinsic, Extrinsic>& Flyweight<Intrinsic, Extrinsic>::operator =(
         const Flyweight& right) {
     if (right != *this) {
-        em_identifier = right.em_identifier;
+        m_identifier = right.m_identifier;
         m_intrinsicState = std::move(right.m_intrinsicState);
     }
     return *this;

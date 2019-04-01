@@ -37,3 +37,12 @@ target_link_libraries(DecoratorTesting PRIVATE general gmock)
 add_test(NAME DecoratorTesting
     COMMAND DecoratorTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(FlyweightTesting
+    patterns/FlyweightTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/UniqueID.cpp)
+set_target_options(FlyweightTesting)
+target_link_libraries(FlyweightTesting PRIVATE general gmock uuid)
+add_test(NAME FlyweightTesting
+    COMMAND FlyweightTesting
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

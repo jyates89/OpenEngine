@@ -14,47 +14,38 @@
 
 #include "Flyweight.h"
 
-#include "../Types/UniqueID.h"
+#include "UniqueID.h"
 
-template<class FW, typename Intrinsic, typename Extrinsic>
+template<typename Intrinsic, typename Extrinsic>
 class FlyweightFactory {
-    static_assert(std::is_base_of<Flyweight<Intrinsic, Extrinsic>, FW>::value,
-            "FW must be a descendant of Flyweight");
 public:
-    FlyweightFactory();
-    ~FlyweightFactory();
+    FlyweightFactory() = default;
+    virtual ~FlyweightFactory() final = default;
 
-    std::shared_ptr<FW> getInstance(const UniqueID& identifier,
-                                    std::shared_ptr<FW> fw = std::shared_ptr<FW>());
+    template<typename ...Args>
+    std::shared_ptr<Flyweight<Intrinsic, Extrinsic>> getInstance(
+            const UniqueID& identifier = UniqueID(), Args&& ...args);
 
 private:
-    std::unordered_map<UniqueID, std::shared_ptr<FW>> m_flyweightMap;
+    std::unordered_map<UniqueID,std::shared_ptr<
+            Flyweight<Intrinsic, Extrinsic>>> m_flyweightMap;
 };
 
-template<class FW, typename Intrinsic, typename Extrinsic>
-inline FlyweightFactory<FW, Intrinsic, Extrinsic>::FlyweightFactory() {
-}
-
-template<class FW, typename Intrinsic, typename Extrinsic>
-inline FlyweightFactory<FW, Intrinsic, Extrinsic>::~FlyweightFactory() {
-}
-
-template<class FW, typename Intrinsic, typename Extrinsic>
-inline std::shared_ptr<FW> FlyweightFactory<FW, Intrinsic, Extrinsic>::getInstance(
-        const UniqueID& identifier, std::shared_ptr<FW> fw) {
-    typename std::unordered_map<UniqueID, std::shared_ptr<FW>>::iterator it;
-    if ((it = m_flyweightMap.find(identifier)) == m_flyweightMap.end()) {
-        if (fw == nullptr) {
-            fw = std::make_shared<FW>();
-        }
-        m_flyweightMap[identifier] = fw;
-        return fw;
-    } else {
-        if (fw != nullptr) {
-            throw std::runtime_error("Attempt to override existing instance.");
-        }
-        return it->second;
+template<typename Intrinsic, typename Extrinsic>
+template<typename ...Args>
+inline std::shared_ptr<Flyweight<Intrinsic, Extrinsic>>
+        FlyweightFactory<Intrinsic, Extrinsic>::getInstance(
+                const UniqueID& identifier, Args&& ...args) {
+    if (m_flyweightMap.find(identifier) == m_flyweightMap.end()) {
+        m_flyweightMap[identifier] =
+                // Using make_shared _requires_ a public constructor, so it isn't
+                // used here. I think it makes more sense to use *new*, as opposed
+                // to using some hacky workaround to be able to use it, or even
+                // worse, making the constructor public.
+                std::shared_ptr<Flyweight<Intrinsic, Extrinsic>>(
+                        new Flyweight<Intrinsic, Extrinsic>(identifier, args...));
     }
+    return m_flyweightMap[identifier];
 }
 
 #endif /* PATTERNS_FLYWEIGHTFACTORY_H_ */
