@@ -9,30 +9,18 @@
 #define PATTERNS_STATE_H_
 
 #include <string>
+#include <memory>
 
-template<class StateData>
+template<class StatefulType>
 class State {
 public:
-    State() {}
-    virtual ~State() {}
-
     virtual std::string stateDescription() const = 0;
 
-    virtual void stateStarting() = 0;
+    virtual void stateStarting(std::shared_ptr<StatefulType> statefulType) = 0;
 
-    virtual void handleStateAction() = 0;
+    virtual void handleStateAction(std::shared_ptr<StatefulType> statefulType) = 0;
 
-    virtual void stateEnding() = 0;
-
-    StateData& getStateData();
-
-protected:
-    StateData m_stateDataObject;
+    virtual void stateEnding(std::shared_ptr<StatefulType> statefulType) = 0;
 };
-
-template<class StateData>
-inline StateData& State<StateData>::getStateData() {
-    return m_stateDataObject;
-}
 
 #endif /* PATTERNS_STATE_H_ */

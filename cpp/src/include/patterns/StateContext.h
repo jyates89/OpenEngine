@@ -12,15 +12,14 @@
 #include <string>
 #include <stack>
 
-#include "../Types/StandardDefines.h"
-
-template<class StateData>
+template<class StatefulType>
 class StateContext {
 public:
-    StateContext();
-    virtual ~StateContext();
+    StateContext() = default;
+    virtual ~StateContext() = default;
 
-    void stateChange(std::unique_ptr<State<StateData>> state);
+    void stateChange(std::shared_ptr<StatefulType> statefulType,
+            std::unique_ptr<State<StatefulType>> state);
 
     void undoStateChange();
     void redoStateChange();
@@ -30,24 +29,18 @@ public:
     std::string currentStateDescription() const;
 
 protected:
-    std::unique_ptr<State<StateData>> m_currentState;
+    std::shared_ptr<StatefulType> m_lastApplication;
+    std::unique_ptr<State<StatefulType>> m_currentState;
 
 private:
-    std::stack<std::unique_ptr<State<StateData>>> m_stateHistory;
-    std::stack<std::unique_ptr<State<StateData>>> m_undoHistory;
+    std::stack<std::unique_ptr<State<StatefulType>>> m_stateHistory;
+    std::stack<std::unique_ptr<State<StatefulType>>> m_undoHistory;
 };
 
-template<class StateData>
-inline StateContext<StateData>::StateContext() {
-}
-
-template<class StateData>
-inline StateContext<StateData>::~StateContext() {
-}
-
-template<class StateData>
-inline void StateContext<StateData>::stateChange(
-        std::unique_ptr<State<StateData>> state) {
+template<class StatefulType>
+inline void StateContext<StatefulType>::stateChange(
+        std::shared_ptr<StatefulType> statefulType,
+        std::unique_ptr<State<StatefulType>> state) {
     if (state == nullptr) {
         throw std::invalid_argument("invalid arguments: nullptr");
     }
@@ -57,10 +50,11 @@ inline void StateContext<StateData>::stateChange(
     }
     m_currentState = std::move(state);
     m_currentState->stateStarting();
+    m_lastApplication = statefulType;
 }
 
-template<class StateData>
-inline void StateContext<StateData>::undoStateChange() {
+template<class StatefulType>
+inline void StateContext<StatefulType>::undoStateChange() {
     if (m_stateHistory.empty()) {
         return;
     }
@@ -71,8 +65,8 @@ inline void StateContext<StateData>::undoStateChange() {
     m_stateHistory.pop();
 }
 
-template<class StateData>
-inline void StateContext<StateData>::redoStateChange() {
+template<class StatefulType>
+inline void StateContext<StatefulType>::redoStateChange() {
     if (m_undoHistory.empty()) {
         return;
     }
@@ -83,16 +77,16 @@ inline void StateContext<StateData>::redoStateChange() {
     m_undoHistory.pop();
 }
 
-template<class StateData>
-inline void StateContext<StateData>::executeCurrentStateHandler() {
+template<class StatefulType>
+inline void StateContext<StatefulType>::executeCurrentStateHandler() {
     if (m_currentState == nullptr) {
         throw std::runtime_error("current state is a nullptr");
     }
     m_currentState->handleStateAction();
 }
 
-template<class StateData>
-inline std::string StateContext<StateData>::currentStateDescription() const {
+template<class StatefulType>
+inline std::string StateContext<StatefulType>::currentStateDescription() const {
     return m_currentState->stateDescription();
 }
 

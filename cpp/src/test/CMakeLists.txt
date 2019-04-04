@@ -46,3 +46,11 @@ target_link_libraries(FlyweightTesting PRIVATE general gmock uuid)
 add_test(NAME FlyweightTesting
     COMMAND FlyweightTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(StateTesting
+    patterns/StateTest.cpp)
+set_target_options(StateTesting)
+target_link_libraries(StateTesting PRIVATE general gmock)
+add_test(NAME StateTesting
+    COMMAND StateTesting
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
