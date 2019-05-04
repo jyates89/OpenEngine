@@ -46,3 +46,12 @@ target_link_libraries(FlyweightTesting PRIVATE general gmock uuid)
 add_test(NAME FlyweightTesting
     COMMAND FlyweightTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(NetTesting
+    net/SocketTest.cpp
+    ${CMAKE_SOURCE_DIR}/src/lib/net/Socket.cpp)
+set_target_options(NetTesting)
+target_link_libraries(NetTesting PRIVATE general gmock)
+add_test(NAME NetTesting
+    COMMAND NetTesting
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

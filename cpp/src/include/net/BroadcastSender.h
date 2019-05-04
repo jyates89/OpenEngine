@@ -1,0 +1,8 @@
+//
+// Created by jyates on 5/4/19.
+//
+
+#ifndef OPENENGINE_BROADCASTCLIENT_H
+#define OPENENGINE_BROADCASTCLIENT_H
+
+#endif //OPENENGINE_BROADCASTCLIENT_H
