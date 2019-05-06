@@ -11,16 +11,51 @@
 #include <string>
 #include <memory>
 
-template<class StatefulType>
+template<typename StateType, StateType head, StateType... states>
+class StateContext;
+
+template<typename StateType, StateType head, StateType... states>
 class State {
+protected:
+
+    std::string stateDescription;
+
+    // Back reference to context allows state to change itself.
+    std::shared_ptr<StateContext<StateType, head, states...>> stateContext;
+
 public:
-    virtual std::string stateDescription() const = 0;
+    State() = delete;
 
-    virtual void stateStarting(std::shared_ptr<StatefulType> statefulType) = 0;
+    explicit State(std::shared_ptr<StateContext<StateType, states...>> stateContext,
+            std::string description = "");
+    virtual ~State() = default;
 
-    virtual void handleStateAction(std::shared_ptr<StatefulType> statefulType) = 0;
+    std::string getDescription();
 
-    virtual void stateEnding(std::shared_ptr<StatefulType> statefulType) = 0;
+    virtual void onStart() = 0;
+
+    virtual void onRevert();
+
+    virtual void onEnd() = 0;
 };
+
+template<typename StateType, StateType... states>
+State<StateType, states...>::State(std::shared_ptr<StateContext<StateType, states...>> stateContext,
+        std::string description) {
+    this->stateContext = std::move(stateContext);
+    this->stateDescription = std::move(description);
+}
+
+template<typename StateType, StateType... states>
+std::string State<StateType, states...>::getDescription() {
+    return stateDescription;
+}
+
+template<typename StateType, StateType... states>
+void State<StateType, states...>::onRevert() {
+    // Call onEnd() by default, but this offers the potential to define
+    // a custom step used for reverting a state.
+    onEnd();
+}
 
 #endif /* PATTERNS_STATE_H_ */

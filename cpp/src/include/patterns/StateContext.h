@@ -10,84 +10,88 @@
 
 #include <memory>
 #include <string>
-#include <stack>
+#include <deque>
+#include "Enumerator.h"
 
-template<class StatefulType>
+#include "State.h"
+
+template<typename StateType, StateType head, StateType... states>
 class StateContext {
+    static_assert(std::is_enum<StateType>::value,
+                  "StateType must be an enumeration type!");
 public:
-    StateContext() = default;
-    virtual ~StateContext() = default;
-
-    void stateChange(std::shared_ptr<StatefulType> statefulType,
-            std::unique_ptr<State<StatefulType>> state);
-
-    void undoStateChange();
-    void redoStateChange();
-
-    void executeCurrentStateHandler();
-
-    std::string currentStateDescription() const;
-
-protected:
-    std::shared_ptr<StatefulType> m_lastApplication;
-    std::unique_ptr<State<StatefulType>> m_currentState;
+    using State_t = std::reference_wrapper<State<StateType, states...>>;
 
 private:
-    std::stack<std::unique_ptr<State<StatefulType>>> m_stateHistory;
-    std::stack<std::unique_ptr<State<StatefulType>>> m_undoHistory;
+    std::string contextDescription;
+
+    State_t currentState;
+
+    std::deque<State_t> stateHistory;
+
+public:
+    explicit StateContext(std::string contextDescription);
+    virtual ~StateContext() = default;
+
+    virtual void stateChange(State_t state);
+
+    void undoChange();
+    void redoChange();
+
+    std::string getContextDescription() const;
+
+    const State_t& getCurrentState() const;
+
 };
 
-template<class StatefulType>
-inline void StateContext<StatefulType>::stateChange(
-        std::shared_ptr<StatefulType> statefulType,
-        std::unique_ptr<State<StatefulType>> state) {
-    if (state == nullptr) {
-        throw std::invalid_argument("invalid arguments: nullptr");
+template<typename StateType, StateType head, StateType... states>
+inline void StateContext<StateType, head, states...>::stateChange(
+        State_t state) {
+    if (currentState != nullptr) {
+        currentState->onEnd();
+        stateHistory.push_back(std::move(state));
     }
-    if (m_currentState != nullptr) {
-        m_currentState->stateEnding();
-        m_stateHistory.push(std::move(m_currentState));
-    }
-    m_currentState = std::move(state);
-    m_currentState->stateStarting();
-    m_lastApplication = statefulType;
+    currentState = std::move(state);
+    currentState->onStart();
 }
 
-template<class StatefulType>
-inline void StateContext<StatefulType>::undoStateChange() {
-    if (m_stateHistory.empty()) {
-        return;
-    }
-    if (m_currentState != nullptr) {
-        m_undoHistory.push(std::move(m_currentState));
-    }
-    stateChange(std::move(m_stateHistory.top()));
-    m_stateHistory.pop();
+template<typename StateType, StateType head, StateType... states>
+const typename StateContext<StateType, head, states...>::State_t&
+    StateContext<StateType, head, states...>::getCurrentState() const {
+        return currentState;
 }
 
-template<class StatefulType>
-inline void StateContext<StatefulType>::redoStateChange() {
-    if (m_undoHistory.empty()) {
-        return;
+template<typename StateType, StateType head, StateType... states>
+void StateContext<StateType, head, states...>::undoChange() {
+    if (currentState != nullptr) {
+        currentState->onRevert();
+        stateHistory.push_front(std::move(currentState));
     }
-    if (m_currentState != nullptr) {
-        m_stateHistory.push(std::move(m_currentState));
+    if (stateHistory.size() > 0) {
+        currentState = std::move(stateHistory.back());
+        stateHistory.pop_back();
+        currentState->onStart();
     }
-    stateChange(std::move(m_undoHistory.top()));
-    m_undoHistory.pop();
 }
 
-template<class StatefulType>
-inline void StateContext<StatefulType>::executeCurrentStateHandler() {
-    if (m_currentState == nullptr) {
-        throw std::runtime_error("current state is a nullptr");
-    }
-    m_currentState->handleStateAction();
+template<typename StateType, StateType head, StateType... states>
+void StateContext<StateType, head, states...>::redoChange() {
+    currentState->onEnd();
+    stateHistory.push_back(std::move(currentState));
+    currentState = std::move(stateHistory.front());
+    stateHistory.pop_front();
+    currentState->onStart();
+
 }
 
-template<class StatefulType>
-inline std::string StateContext<StatefulType>::currentStateDescription() const {
-    return m_currentState->stateDescription();
+template<typename StateType, StateType head, StateType... states>
+StateContext<StateType, head, states...>::StateContext(std::string contextDescription) {
+    this->contextDescription = contextDescription;
+}
+
+template<typename StateType, StateType head, StateType... states>
+std::string StateContext<StateType, head, states...>::getContextDescription() const {
+    return contextDescription;
 }
 
 #endif /* PATTERNS_STATECONTEXT_H_ */
