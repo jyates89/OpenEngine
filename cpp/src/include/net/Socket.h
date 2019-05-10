@@ -15,9 +15,9 @@ extern "C" {
 #include "serialization/Deserializable.h"
 
 class Socket {
+protected:
     explicit Socket(int socketDescriptor);
 
-protected:
     const int socketDescriptor;
 
 public:

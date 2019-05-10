@@ -49,7 +49,7 @@ add_test(NAME FlyweightTesting
 
 add_executable(NetTesting
     net/SocketTest.cpp
-    ${CMAKE_SOURCE_DIR}/src/lib/net/Socket.cpp)
+    ${CMAKE_SOURCE_DIR}/src/lib/net/TCPServer.cpp)
 set_target_options(NetTesting)
 target_link_libraries(NetTesting PRIVATE general gmock)
 add_test(NAME NetTesting
