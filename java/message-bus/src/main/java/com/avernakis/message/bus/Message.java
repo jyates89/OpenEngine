@@ -1,3 +1,5 @@
 package com.avernakis.message.bus;
 
-interface Message {}
+interface Message {
+  String description();
+}

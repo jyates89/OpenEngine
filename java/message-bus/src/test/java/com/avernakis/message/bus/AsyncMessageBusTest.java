@@ -1,34 +1,52 @@
 package com.avernakis.message.bus;
 
 import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AsyncMessageBusTest {
+  private AsyncMessageBus messageBus = null;
   @BeforeAll
   static void setup() {
-
   }
 
   @BeforeEach
   void init() {
-
-  }
-
-  @Test
-  @DisplayName("Empty queue is handled with timeout.")
-  void emptyQueueProducesTimeout() {
-
-  }
-
-  @Test
-  @DisplayName("Empty queue is handled with blocking.")
-  void emptyQueueBlocks() {
-
+    messageBus = new AsyncMessageBus();
+    messageBus.start();
   }
 
   @Test
   @DisplayName("New message type can be registered.")
   void newTypeCanBeRegistered() {
+    class TestMessage implements Message {
+      Boolean handlerCalled;
+      void updateHandlerCalled() {
+        handlerCalled = true;
+      }
+      @Override
+      public String description() {
+        return "TestMessage";
+      }
+    }
 
+    Handler<TestMessage> handler = new Handler<>() {
+      @Override
+      Message callback(TestMessage message) {
+        message.updateHandlerCalled();
+        assertEquals(message.description(), "TestMessage");
+        return null;
+      }
+    };
+
+    messageBus.registerHandler(TestMessage.class, handler);
+    TestMessage message = new TestMessage();
+    messageBus.submitMessage(message);
+    try {
+      Thread.sleep(4);
+    } catch (InterruptedException e) {
+      fail();
+    }
+    assertTrue(message.handlerCalled);
   }
 
   @Test
@@ -82,6 +100,8 @@ class AsyncMessageBusTest {
   static void teardown() {}
 
   @AfterEach
-  void destroy() {}
+  void destroy() {
+    messageBus.stop();
+  }
 
 }

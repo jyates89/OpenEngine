@@ -6,6 +6,8 @@ package com.avernakis.message.bus;
 import org.junit.jupiter.api.*;
 
 class SyncMessageBusTest {
+  SyncMessageBus messageBus = null;
+
   @BeforeAll
   static void setup() {
 
