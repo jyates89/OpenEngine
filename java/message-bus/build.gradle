@@ -15,8 +15,12 @@ version '0.0'
 dependencies {
     compile project(':common')
 
-    testCompile 'org.mockito:mockito-core:2.+'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.0'
+    testCompile 'org.mockito:mockito-core:2.+',
+                'org.mockito:mockito-junit-jupiter:2.+',
+                'org.hamcrest:hamcrest:2.+',
+                'org.hamcrest:hamcrest-junit:2.+'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.+'
 }
 
 test {

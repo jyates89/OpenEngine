@@ -5,12 +5,23 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
-public class SyncMessageBus extends MessageBus implements Runnable {
+/**
+ * The type Sync message bus.
+ */
+public class SyncMessageBus extends MessageBus {
+  /**
+   * Instantiates a new Sync message bus.
+   */
   SyncMessageBus() {
     messageQueue = new LinkedBlockingQueue<>();
     handlerMap = new HashMap<>();
   }
 
+  /**
+   * Instantiates a new Sync message bus.
+   *
+   * @param queueLimit the queue limit
+   */
   SyncMessageBus(int queueLimit) {
     if (queueLimit == 1) {
       messageQueue = new SynchronousQueue<>();
@@ -18,10 +29,5 @@ public class SyncMessageBus extends MessageBus implements Runnable {
       messageQueue = new ArrayBlockingQueue<>(queueLimit);
     }
     handlerMap = new HashMap<>();
-  }
-
-  @Override
-  public void run() {
-    processMessage();
   }
 }
