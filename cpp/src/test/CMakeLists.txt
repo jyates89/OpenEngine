@@ -55,3 +55,11 @@ target_link_libraries(NetTesting PRIVATE general gmock)
 add_test(NAME NetTesting
     COMMAND NetTesting
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(StateTesting
+    patterns/StateTest.cpp)
+set_target_options(StateTesting)
+target_link_libraries(StateTesting PRIVATE general gmock)
+add_test(NAME StateTesting
+    COMMAND StateTesting
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
