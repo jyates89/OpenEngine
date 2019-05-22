@@ -3,34 +3,45 @@ package com.avernakis.message.bus;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * The type Async message bus.
+ */
 public class AsyncMessageBus extends MessageBus implements Runnable {
-  private Thread asyncThread;
-
-  AsyncMessageBus() {
+  /**
+   * Instantiates a new Async message bus.
+   */
+  AsyncMessageBus(int sleepMs) {
+    asyncThread = new Thread(this);
     messageQueue = new ConcurrentLinkedQueue<>();
     handlerMap = new ConcurrentHashMap<>();
+
+    this.sleepMs = sleepMs;
   }
 
-  @SuppressWarnings("WeakerAccess")
-  public void start() {
-    asyncThread = new Thread(this);
-    asyncThread.start();
-  }
+  /**
+   * Start.
+   */
+  public void start() { asyncThread.run(); }
 
   @Override
   public void run() {
-    while (!asyncThread.isInterrupted()) {
+    while (!Thread.currentThread().isInterrupted()) {
       processMessage();
       try {
-        Thread.sleep(1);
+        Thread.sleep(sleepMs);
       } catch (InterruptedException e) {
         break;
       }
     }
   }
 
-  @SuppressWarnings("WeakerAccess")
+  /**
+   * Stop.
+   */
   public void stop() {
     asyncThread.interrupt();
   }
+
+  private Thread asyncThread;
+  private int sleepMs;
 }
