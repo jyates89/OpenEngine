@@ -11,4 +11,5 @@ rootProject.name = 'OpenEngine'
 
 include 'common'
 include 'message-bus'
+include 'shell'
 

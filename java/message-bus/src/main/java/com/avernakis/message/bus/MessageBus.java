@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * The type Message bus.
  */
-abstract class MessageBus {
+public abstract class MessageBus {
   /**
    * The Message queue.
    */

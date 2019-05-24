@@ -3,7 +3,7 @@ package com.avernakis.message.bus;
 /**
  * The interface Message.
  */
-interface Message {
+public interface Message {
   /**
    * Description string.
    *

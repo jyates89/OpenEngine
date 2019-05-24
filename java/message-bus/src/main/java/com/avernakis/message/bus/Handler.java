@@ -5,7 +5,7 @@ package com.avernakis.message.bus;
  *
  * @param <T> the type parameter
  */
-abstract class Handler<T extends Message> {
+public abstract class Handler<T extends Message> {
   /**
    * Callback message.
    *
