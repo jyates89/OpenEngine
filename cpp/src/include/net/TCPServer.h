@@ -5,15 +5,12 @@
 #ifndef OPENENGINE_TCPSERVER_H
 #define OPENENGINE_TCPSERVER_H
 
-#include "SocketServer.h"
 #include "TCPSocket.h"
 
-class TCPServer : public SocketServer {
+class TCPServer {
 public:
-    TCPServer();
-    ~TCPServer() override = default;
 
-    void run() override;
-    void terminate() override;
+    void run();
+    void terminate();
 };
 #endif //OPENENGINE_TCPSERVER_H

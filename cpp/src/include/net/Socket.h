@@ -14,6 +14,8 @@ extern "C" {
 #include "serialization/Serializable.h"
 #include "serialization/Deserializable.h"
 
+namespace OE {
+
 class Socket {
 protected:
     explicit Socket(int socketDescriptor);
@@ -24,12 +26,14 @@ public:
     virtual ~Socket() = default;
 
     virtual ssize_t send(std::unique_ptr<Serializable> serializable) = 0;
+
     virtual ssize_t recv(std::unique_ptr<Deserializable> deserializable) = 0;
 
 };
 
 Socket::Socket(int socketDescriptor) :
-    socketDescriptor(socketDescriptor) {
+        socketDescriptor(socketDescriptor) {
 }
 
+}
 #endif //OPENENGINE_SOCKET_H
