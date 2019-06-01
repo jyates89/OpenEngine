@@ -6,8 +6,12 @@
 #define OPENENGINE_UDPSOCKET_H
 
 #include "Socket.h"
+
+namespace OE {
+
 class UDPSocket : public Socket {
 
 };
 
+}
 #endif //OPENENGINE_UDPSOCKET_H

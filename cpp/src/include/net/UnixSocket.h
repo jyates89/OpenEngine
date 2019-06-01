@@ -7,8 +7,13 @@
 
 #include "Socket.h"
 
+namespace OE {
+
 class UnixSocket : public Socket {
 public:
 
 };
+
+}
+
 #endif //OPENENGINE_UNIXSOCKET_H
