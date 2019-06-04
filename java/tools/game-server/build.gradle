@@ -1,0 +1,19 @@
+
+plugins {
+  id 'application'
+}
+
+version '0.0'
+
+dependencies {
+  compile project(':common')
+  compile project(':message-bus')
+}
+
+jar {
+  manifest {
+    attributes 'Implementation-Title': 'game-server',
+        'Implementation-Version': version,
+        'Build-Date': new Date().format('yyyyMMddHHmmss')
+  }
+}

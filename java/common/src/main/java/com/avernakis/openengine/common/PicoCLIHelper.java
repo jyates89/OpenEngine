@@ -1,4 +1,4 @@
-package com.avernakis.common;
+package com.avernakis.openengine.common;
 
 import picocli.CommandLine;
 

@@ -1,4 +1,4 @@
-package com.avernakis.message.bus;
+package com.avernakis.openengine.message.bus;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;

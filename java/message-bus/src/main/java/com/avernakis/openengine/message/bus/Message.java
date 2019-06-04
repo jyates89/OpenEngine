@@ -1,4 +1,4 @@
-package com.avernakis.message.bus;
+package com.avernakis.openengine.message.bus;
 
 /**
  * The interface Message.

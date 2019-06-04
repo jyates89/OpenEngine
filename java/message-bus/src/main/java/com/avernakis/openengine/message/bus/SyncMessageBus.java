@@ -1,4 +1,4 @@
-package com.avernakis.message.bus;
+package com.avernakis.openengine.message.bus;
 
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
