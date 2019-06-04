@@ -7,8 +7,8 @@
  * in the user manual at https://docs.gradle.org/5.2.1/userguide/multi_project_builds.html
  */
 
-rootProject.name = 'open-engine'
+rootProject.name = 'openengine'
 
 include 'common'
-include 'message-bus'
-include 'tools:game-server'
+include 'messagebus'
+include 'tools:gameserver'

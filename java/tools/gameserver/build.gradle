@@ -7,7 +7,7 @@ version '0.0'
 
 dependencies {
   compile project(':common')
-  compile project(':message-bus')
+  compile project(':messagebus')
 }
 
 jar {
