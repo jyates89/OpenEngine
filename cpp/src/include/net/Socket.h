@@ -14,6 +14,10 @@ extern "C" {
 #include "serialization/Serializable.h"
 #include "serialization/Deserializable.h"
 
+#include "builders/HintBuilder.h"
+#include "builders/RecvFlagBuilder.h"
+#include "builders/SendFlagBuilder.h"
+
 namespace OE {
 
 class Socket {
@@ -23,6 +27,10 @@ protected:
     const int socketDescriptor;
 
 public:
+
+
+    static HintBuilder builder();
+
     virtual ~Socket() = default;
 
     virtual ssize_t send(std::unique_ptr<Serializable> serializable) = 0;

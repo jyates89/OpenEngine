@@ -7,11 +7,23 @@
 
 namespace OE {
 
-struct addrinfo init() {
-    int status = 0;
+struct addrinfo fillIPV4TCPBind() {
     struct addrinfo hints = { 0 };
-    struct addrinfo* results = nullptr;
-
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    return hints;
 }
 
+struct addrinfo fillIPV4TCPConnect() {
+    struct addrinfo hints = { 0 };
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    return hints;
+}
+
+struct addrinfo fillIPV4UDP() {
+    struct addrinfo hints = {0};
+
+}
 }
