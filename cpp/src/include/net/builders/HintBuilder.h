@@ -10,11 +10,13 @@ extern "C" {
 #include <netdb.h>
 };
 
+namespace OE {
+
 class HintBuilder {
     struct addrinfo hints;
 
 public:
-    HintBuilder() : hints({ 0 }) {
+    HintBuilder() : hints({0}) {
         // defaults
         hints.ai_family = AF_UNSPEC;
     }
@@ -38,7 +40,8 @@ public:
         return *this;
     }
 
-
 };
+
+}
 
 #endif //OPENENGINE_HINTBUILDER_H

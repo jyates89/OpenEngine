@@ -10,11 +10,13 @@ extern "C" {
 #include <sys/socket.h>
 };
 
+namespace OE {
+
 class RecvFlagBuilder {
     int flags;
 
 public:
-    RecvFlagBuilder() : flags(0) {}
+    RecvFlagBuilder() : flags(0) { }
 
     int build() {
         return flags;
@@ -54,5 +56,7 @@ public:
         return *this;
     }
 };
+
+}
 
 #endif //OPENENGINE_RECVFLAGBUILDER_H

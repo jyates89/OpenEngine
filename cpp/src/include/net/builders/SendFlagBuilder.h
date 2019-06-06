@@ -10,11 +10,13 @@ extern "C" {
 #include <sys/socket.h>
 };
 
+namespace OE {
+
 class SendFlagBuilder {
     int flags;
 
 public:
-    SendFlagBuilder() : flags(0) {}
+    SendFlagBuilder() : flags(0) { }
 
     int build() {
         return flags;
@@ -53,5 +55,7 @@ public:
         return *this;
     }
 };
+
+}
 
 #endif //OPENENGINE_SOCKETFLAGBUILDER_H
