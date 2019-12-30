@@ -15,49 +15,11 @@ namespace OE {
 
 class TCPClient {
 public:
-    class TCPClientBuilder {
-        friend TCPClient;
-
-        std::string hostname;
-        std::string port;
-
-    public:
-        TCPClient build() {
-            return TCPClient(*this);
-        }
-
-        TCPClientBuilder withHostname(std::string hostname);
-
-        TCPClientBuilder withPort(std::string port);
-    };
-
-    static TCPClientBuilder builder();
-
 private:
-    explicit TCPClient(TCPClientBuilder builder);
 
     std::string hostname;
     std::string port;
 };
-
-TCPClient::TCPClientBuilder TCPClient::TCPClientBuilder::withHostname(std::string hostname) {
-    this->hostname = std::move(hostname);
-    return *this;
-}
-
-TCPClient::TCPClientBuilder TCPClient::TCPClientBuilder::withPort(std::string port) {
-    this->port = std::move(port);
-    return *this;
-}
-
-TCPClient::TCPClient(TCPClient::TCPClientBuilder builder) {
-    hostname = builder.hostname;
-    port     = builder.port;
-}
-
-TCPClient::TCPClientBuilder TCPClient::builder() {
-    return { };
-}
 
 }
 

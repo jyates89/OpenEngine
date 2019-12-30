@@ -13,29 +13,16 @@ class TCPSocket : public Socket {
 public:
     explicit TCPSocket(int socketDescriptor);
 
-    virtual ~TCPSocket();
+    ~TCPSocket() override = default;
 
-    ssize_t send(std::unique_ptr<Serializable> serializable) override;
+    ssize_t send(
+            std::unique_ptr<Serializable> serializable,
+            int flags) override;
 
-    ssize_t recv(std::unique_ptr<Deserializable> deserializable) override;
+    ssize_t recv(
+            std::unique_ptr<Deserializable> deserializable,
+            int flags) override;
 };
-
-TCPSocket::TCPSocket(int socketDescriptor) :
-        Socket(socketDescriptor) {
-
-}
-
-TCPSocket::~TCPSocket() {
-
-}
-
-ssize_t TCPSocket::send(std::unique_ptr<Serializable> serializable) {
-    return 0;
-}
-
-ssize_t TCPSocket::recv(std::unique_ptr<Deserializable> deserializable) {
-    return 0;
-}
 
 }
 

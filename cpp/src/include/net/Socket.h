@@ -15,32 +15,45 @@ extern "C" {
 #include "serialization/Deserializable.h"
 
 #include "builders/HintBuilder.h"
-#include "builders/RecvFlagBuilder.h"
-#include "builders/SendFlagBuilder.h"
 
 namespace OE {
 
 class Socket {
 protected:
-    explicit Socket(int socketDescriptor);
-
     const int socketDescriptor;
 
+    explicit Socket(int socketDescriptor);
+
 public:
-
-
-    static HintBuilder builder();
-
     virtual ~Socket() = default;
 
-    virtual ssize_t send(std::unique_ptr<Serializable> serializable) = 0;
+    ssize_t send(std::unique_ptr<Serializable> serializable);
+    virtual ssize_t send(
+            std::unique_ptr<Serializable> serializable,
+            int flags) = 0;
 
-    virtual ssize_t recv(std::unique_ptr<Deserializable> deserializable) = 0;
+    ssize_t recv(std::unique_ptr<Deserializable> deserializable);
+    virtual ssize_t recv(
+            std::unique_ptr<Deserializable> deserializable,
+            int flags) = 0;
 
+    static HintBuilder hintBuilder();
 };
 
 Socket::Socket(int socketDescriptor) :
         socketDescriptor(socketDescriptor) {
+}
+
+ssize_t Socket::send(std::unique_ptr<Serializable> serializable) {
+    return send(std::move(serializable), 0);
+}
+
+ssize_t Socket::recv(std::unique_ptr<Deserializable> deserializable) {
+    return recv(std::move(deserializable), 0);
+}
+
+HintBuilder Socket::hintBuilder() {
+    return { };
 }
 
 }
